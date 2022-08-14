@@ -50,11 +50,19 @@ jobs:
     if: always()
     runs-on: macos-latest
     steps:
+      - id: generate-token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.ANYENV_BOT_APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+          repository: "anyenv/homebrew-core"
       - run: |
           set -xe
           tag=${{ needs.publish_release.outputs.tag }}
           tag=v1.1.5
-          brew bump-formula-pr -n --url https://github.com/anyenv/anyenv/archive/${tag}.tar.gz --fork-org anyenv --no-browse
+          brew bump-formula-pr --url https://github.com/anyenv/anyenv/archive/${tag}.tar.gz --fork-org anyenv --no-browse
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ steps.generate-token.outputs.token }}
   
   update_release_draft:
     needs:

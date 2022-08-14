@@ -73,7 +73,7 @@ jobs:
           set -xe
           tag=${{ needs.update_release_draft.outputs.tag }}
           version=${tag:1}
-          sed -i "s/^version=.+$/version=${version}/" libexec/anyenv---version
+          sed -i "s/^version=.\+$/version=\"${version}\"/" libexec/anyenv---version
           cat libexec/anyenv---version
           git diff
       - uses: stefanzweifel/git-auto-commit-action@v4

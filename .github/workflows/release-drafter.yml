@@ -89,3 +89,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - run: |
           gh pr edit --body "${{ needs.update_release_draft.outputs.body }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

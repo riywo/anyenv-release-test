@@ -56,7 +56,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
-      draft-tag: ${{ steps.draft.outputs.tag_name }}
+      tag: ${{ steps.draft.outputs.tag_name }}
+      body: ${{ steps.draft.outputs.body }}
+      url: ${{ steps.draft.outputs.html_url }}
   
   update_bump_pull_request:
     needs: 
@@ -66,5 +68,23 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - run: echo ${{ needs.update_release_draft.outputs.draft-tag }}
-      # - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - run: |
+          set -xe
+          tag=${{ needs.update_release_draft.outputs.tag }}
+          version=${tag:1}
+          sed -i "s/^version=.+$/version=${version}/" libexec/anyenv---version
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          branch: bump/${{ needs.update_release_draft.outputs.tag }}
+          commit_message: Release ${{ needs.update_release_draft.outputs.tag }}
+      - uses: repo-sync/pull-request@v2
+        with:
+          source_branch: bump/${{ needs.update_release_draft.outputs.tag }}
+          destination_branch: master
+          pr_title: Release ${{ needs.update_release_draft.outputs.tag }}
+          pr_body: |
+            ${{ needs.update_release_draft.outputs.body }}
+
+            See the release at: ${{ needs.update_release_draft.outputs.url }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

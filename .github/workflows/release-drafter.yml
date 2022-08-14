@@ -2,7 +2,6 @@ name: Release Drafter
 
 on:
   push:
-    # branches to consider in the event; optional, defaults to all
     branches:
       - master
 
@@ -10,16 +9,65 @@ permissions:
   contents: read
 
 jobs:
-  update_release_draft:
+  check-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - id: tag
+        uses: salsify/action-detect-and-tag-new-version@v2
+        with:
+          create-tag: false
+          version-command: |
+            eval $(egrep '^version=' libexec/anyenv---version) && echo "$version"
+    outputs:
+      is-bump: ${{ startsWith(steps.tag.outputs.tag, 'v') }}
+      is-not-bump: ${{ !startsWith(steps.tag.outputs.tag, 'v') }}
+      version: ${{ steps.tag.outputs.new-version }}
+      tag: ${{ steps.tag.outputs.tag }}
+
+  publish_release_draft:
+    needs:
+      - check-bump
+    if: needs.check-bump.is-bump
     permissions:
-      # write permission is required to create a github release
       contents: write
-      # write permission is required for autolabeler
-      # otherwise, read permission is required at least
       pull-requests: read
     runs-on: ubuntu-latest
     steps:
-      # Drafts your next Release notes as Pull Requests are merged into "master"
-      - uses: release-drafter/release-drafter@v5
+      - id: publish
+        uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          publish: true
+          name: ${{ needs.check-bump.tag }}
+          tag: ${{ needs.check-bump.tag }}
+          version: ${{ needs.check-bump.version }}
+  
+  update_release_draft:
+    needs:
+      - check-bump
+    if: needs.check-bump.is-not-bump
+    permissions:
+      contents: write
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - id: draft
+        uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      draft-tag: ${{ steps.draft.tag_name }}
+  
+  update_bump_pull_request:
+    needs: 
+      - update_release_draft
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3

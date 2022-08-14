@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # publish: true
+          publish: true
           version: ${{ needs.version.outputs.current }}
   
   update_release_draft:

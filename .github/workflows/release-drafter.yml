@@ -41,14 +41,17 @@ jobs:
         with:
           publish: true
           version: ${{ needs.version.outputs.current }}
+    outputs:
+      tag: ${{ steps.publish.outputs.tag_name }}
 
   create-brew-pr:
-    #needs:
-    #  - publish_release
+    needs:
+      - publish_release
+    if: always()
     runs-on: macos-latest
     steps:
       - run: |
-          brew bump-formula-pr --help
+          brew bump-formula-pr -n --url https://github.com/anyenv/anyenv/archive/${{ needs.publish_release.outputs.tag }}.tar.gz
   
   update_release_draft:
     needs:

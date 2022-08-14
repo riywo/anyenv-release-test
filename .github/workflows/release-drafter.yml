@@ -22,15 +22,15 @@ jobs:
           version-command: |
             eval $(egrep '^version=' libexec/anyenv---version) && echo "$version"
     outputs:
-      is-bump: ${{ startsWith(steps.tag.outputs.tag, 'v') }}
-      is-not-bump: ${{ !startsWith(steps.tag.outputs.tag, 'v') }}
+      is-publish: ${{ startsWith(steps.tag.outputs.tag, 'v') }}
+      is-draft: ${{ !startsWith(steps.tag.outputs.tag, 'v') }}
       version: ${{ steps.tag.outputs.new-version }}
       tag: ${{ steps.tag.outputs.tag }}
 
-  publish_release_draft:
+  publish_release:
     needs:
       - check-bump
-    if: needs.check-bump.is-bump
+    if: needs.check-bump.outputs.is-publish
     permissions:
       contents: write
       pull-requests: read
@@ -42,14 +42,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           publish: true
-          name: ${{ needs.check-bump.tag }}
-          tag: ${{ needs.check-bump.tag }}
-          version: ${{ needs.check-bump.version }}
+          name: ${{ needs.check-bump.outputs.tag }}
+          tag: ${{ needs.check-bump.outputs.tag }}
+          version: ${{ needs.check-bump.outputs.version }}
   
   update_release_draft:
     needs:
       - check-bump
-    if: needs.check-bump.is-not-bump
+    if: needs.check-bump.output.is-draft
     permissions:
       contents: write
       pull-requests: read
@@ -60,7 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
-      draft-tag: ${{ steps.draft.tag_name }}
+      draft-tag: ${{ steps.draft.outputs.tag_name }}
   
   update_bump_pull_request:
     needs: 

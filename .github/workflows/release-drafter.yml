@@ -41,6 +41,14 @@ jobs:
         with:
           publish: true
           version: ${{ needs.version.outputs.current }}
+
+  create-brew-pr:
+    #needs:
+    #  - publish_release
+    runs-on: macos-latest
+    steps:
+      - run: |
+          brew bump-formula-pr --help
   
   update_release_draft:
     needs:

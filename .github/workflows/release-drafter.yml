@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  check-bump:
+  version:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -22,15 +22,13 @@ jobs:
           version-command: |
             eval $(egrep '^version=' libexec/anyenv---version) && echo "$version"
     outputs:
-      is-publish: ${{ steps.tag.outputs.tag != '' }}
-      is-draft: ${{ steps.tag.outputs.tag == '' }}
-      version: ${{ steps.tag.outputs.current-version }}
-      tag: ${{ steps.tag.outputs.tag }}
+      current: ${{ steps.tag.outputs.current-version }}
+      previous: ${{ steps.tag.outputs.previous-version }}
 
   publish_release:
     needs:
-      - check-bump
-    if: ${{ needs.check-bump.outputs.tag != '' }}
+      - version
+    if: needs.version.outputs.current != needs.version.outputs.previous
     permissions:
       contents: write
       pull-requests: read
@@ -42,14 +40,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # publish: true
-          name: ${{ needs.check-bump.outputs.tag }}
-          tag: ${{ needs.check-bump.outputs.tag }}
-          version: ${{ needs.check-bump.outputs.version }}
+          version: ${{ needs.version.outputs.current }}
   
   update_release_draft:
     needs:
-      - check-bump
-    if: ${{ needs.check-bump.output.tag == '' }}
+      - version
+    if: needs.version.outputs.current == needs.version.outputs.previous
     permissions:
       contents: write
       pull-requests: read

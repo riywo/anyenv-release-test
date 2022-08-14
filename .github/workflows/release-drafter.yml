@@ -55,6 +55,9 @@ jobs:
         uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # publish: true
+          version: ${{ needs.version.outputs.current }}
     outputs:
       draft-tag: ${{ steps.draft.outputs.tag_name }}
   
@@ -66,4 +69,5 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - run: echo ${{ needs.update_release_draft.outputs.draft-tag }}
+      # - uses: actions/checkout@v3

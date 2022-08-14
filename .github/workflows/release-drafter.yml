@@ -74,11 +74,11 @@ jobs:
           tag=${{ needs.update_release_draft.outputs.tag }}
           version=${tag:1}
           sed -i "s/^version=.\+$/version=\"${version}\"/" libexec/anyenv---version
-          cat libexec/anyenv---version
           git diff
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           branch: bump/${{ needs.update_release_draft.outputs.tag }}
+          create_branch: true
           commit_message: Release ${{ needs.update_release_draft.outputs.tag }}
       - uses: repo-sync/pull-request@v2
         with:

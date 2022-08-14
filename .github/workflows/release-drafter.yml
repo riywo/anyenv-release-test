@@ -53,7 +53,7 @@ jobs:
       - run: |
           set -xe
           tag=${{ needs.publish_release.outputs.tag }}
-          tag=v1.1.4
+          tag=v1.1.5
           brew bump-formula-pr -n --url https://github.com/anyenv/anyenv/archive/${tag}.tar.gz --fork-org anyenv --no-browse
   
   update_release_draft:

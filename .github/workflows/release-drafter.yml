@@ -86,7 +86,5 @@ jobs:
           pr_title: Release ${{ needs.update_release_draft.outputs.tag }}
           pr_body: ${{ needs.update_release_draft.outputs.body }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: kt3k/update-pr-description@v1
-        with:
-          pr_body: ${{ needs.update_release_draft.outputs.body }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          gh pr edit --body "${{ needs.update_release_draft.outputs.body }}"

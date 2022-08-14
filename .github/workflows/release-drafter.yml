@@ -22,8 +22,8 @@ jobs:
           version-command: |
             eval $(egrep '^version=' libexec/anyenv---version) && echo "$version"
     outputs:
-      is-publish: ${{ startsWith(steps.tag.outputs.tag, 'v') }}
-      is-draft: ${{ !startsWith(steps.tag.outputs.tag, 'v') }}
+      is-publish: ${{ steps.tag.outputs.tag != '' }}
+      is-draft: ${{ steps.tag.outputs.tag == '' }}
       version: ${{ steps.tag.outputs.current-version }}
       tag: ${{ steps.tag.outputs.tag }}
 

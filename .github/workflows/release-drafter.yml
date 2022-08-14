@@ -24,7 +24,7 @@ jobs:
     outputs:
       is-publish: ${{ startsWith(steps.tag.outputs.tag, 'v') }}
       is-draft: ${{ !startsWith(steps.tag.outputs.tag, 'v') }}
-      version: ${{ steps.tag.outputs.new-version }}
+      version: ${{ steps.tag.outputs.current-version }}
       tag: ${{ steps.tag.outputs.tag }}
 
   publish_release:
@@ -36,6 +36,8 @@ jobs:
       pull-requests: read
     runs-on: ubuntu-latest
     steps:
+      - run: echo ${{ needs.check-bump.outputs.is-publish }}
+      - run: echo ${{ needs.check-bump.outputs.is-draft }}
       - id: publish
         uses: release-drafter/release-drafter@v5
         env:

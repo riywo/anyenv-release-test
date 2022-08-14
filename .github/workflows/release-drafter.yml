@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          publish: true
+          # publish: true
           version: ${{ needs.version.outputs.current }}
   
   update_release_draft:
@@ -74,12 +74,18 @@ jobs:
           version=${tag:1}
           sed -i "s/^version=.\+$/version=\"${version}\"/" libexec/anyenv---version
           git diff
-      - uses: gr2m/create-or-update-pull-request-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          title: Release ${{ needs.update_release_draft.outputs.tag }}
-          body: ${{ needs.update_release_draft.outputs.body }}
-          branch: bump/${{ needs.update_release_draft.outputs.tag }}
-          commit-message: "My commit message for uncommitted changes in lib/ folder"
-          update-pull-request-title-and-body: true
+          create_branch: true
+          commit_message: Release ${{ needs.update_release_draft.outputs.tag }}
+      - uses: repo-sync/pull-request@v2
+        with:
+          source_branch: bump/${{ needs.update_release_draft.outputs.tag }}
+          destination_branch: master
+          pr_title: Release ${{ needs.update_release_draft.outputs.tag }}
+          pr_body: ${{ needs.update_release_draft.outputs.body }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: kt3k/update-pr-description@v1
+        with:
+          pr_body: ${{ needs.update_release_draft.outputs.body }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

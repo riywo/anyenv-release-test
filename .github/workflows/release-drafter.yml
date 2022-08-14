@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # publish: true
+          publish: true
           version: ${{ needs.version.outputs.current }}
   
   update_release_draft:
@@ -76,6 +76,7 @@ jobs:
           git diff
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
+          branch: bump/${{ needs.update_release_draft.outputs.tag }}
           create_branch: true
           commit_message: Release ${{ needs.update_release_draft.outputs.tag }}
       - uses: repo-sync/pull-request@v2
